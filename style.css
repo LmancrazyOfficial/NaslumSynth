@@ -1,168 +1,66 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,Helvetica,sans-serif;
-}
-
 body{
+    margin:0;
     background:#111;
     color:white;
+    font-family:Arial;
     overflow:hidden;
 }
 
-header{
-    background:#181818;
-    border-bottom:3px solid #b00000;
-    padding:15px;
-}
-
 h1{
-    color:#ff3b3b;
+    color:#ff2b2b;
     text-align:center;
-    margin-bottom:15px;
-    letter-spacing:2px;
 }
 
 .toolbar{
     display:flex;
+    gap:10px;
     flex-wrap:wrap;
+    padding:10px;
     justify-content:center;
-    gap:20px;
+    background:#181818;
+    border-bottom:2px solid #900;
 }
 
-.toolbar label{
-    display:flex;
-    flex-direction:column;
-    font-size:14px;
-    color:#ddd;
-    gap:6px;
-}
-
-select,
-input[type=range]{
-    width:180px;
-    padding:6px;
+input,select{
     background:#222;
     color:white;
     border:1px solid #900;
-    border-radius:6px;
-}
-
-main{
-    height:calc(100vh - 120px);
-    display:flex;
-    align-items:flex-end;
-}
-
-#keyboardContainer{
-    width:100%;
-    overflow-x:auto;
-    overflow-y:hidden;
-    padding:15px;
-    background:#151515;
 }
 
 #keyboard{
-    position:relative;
     display:flex;
     height:320px;
-    width:max-content;
+    overflow-x:auto;
+    margin-top:10px;
 }
-
-/* ---------- White Keys ---------- */
 
 .white-key{
-    width:42px;
-    height:320px;
+    width:40px;
     background:#fafafa;
     border:1px solid #444;
-    border-radius:0 0 6px 6px;
     position:relative;
-    cursor:pointer;
-    user-select:none;
-    transition:.05s;
 }
-
-.white-key:hover{
-    background:#ffe5e5;
-}
-
-.white-key.active{
-    background:#ff5555;
-}
-
-/* ---------- Black Keys ---------- */
 
 .black-key{
-    position:absolute;
-    width:26px;
-    height:190px;
+    width:25px;
+    height:180px;
     background:#111;
-    border:1px solid #444;
-    border-radius:0 0 4px 4px;
+    position:absolute;
+    margin-left:-12px;
     z-index:10;
-    cursor:pointer;
-    transition:.05s;
 }
 
-.black-key:hover{
-    background:#333;
-}
+.white-key.active{ background:#ff4d4d; }
+.black-key.active{ background:#aa0000; }
 
-.black-key.active{
-    background:#cc0000;
-}
-
-/* ---------- Note Labels ---------- */
-
-.note-label{
-    position:absolute;
-    bottom:10px;
-    left:50%;
-    transform:translateX(-50%);
-    font-size:10px;
-    color:#555;
-    pointer-events:none;
-}
-
-.black-key .note-label{
-    color:white;
-}
-
-/* ---------- Scrollbar ---------- */
-
-::-webkit-scrollbar{
-    height:12px;
-}
-
-::-webkit-scrollbar-track{
-    background:#111;
-}
-
-::-webkit-scrollbar-thumb{
-    background:#990000;
-    border-radius:10px;
-}
-
-::-webkit-scrollbar-thumb:hover{
-    background:#cc0000;
-}
-.toolbar{
-    background:#111;
+.fx-panel{
+    display:flex;
+    gap:10px;
     padding:10px;
-    border:1px solid #900;
-    border-radius:10px;
+    background:#0f0f0f;
 }
 
-.toolbar label{
-    font-size:12px;
-}
-
-input[type=range]{
-    accent-color:#ff2b2b;
-}
-
-select{
-    cursor:pointer;
+canvas{
+    width:100%;
+    background:#000;
 }
