@@ -1,17 +1,39 @@
-const keys = document.getElementById("keyboard");
+const keyboard = document.getElementById("keyboard");
 
-const notes = [];
-for(let i=21;i<=108;i++) notes.push(i);
+// 88 keys from A0 to C8 using MIDI range
+const START = 21;
+const END = 108;
 
-notes.forEach((n,i)=>{
+// note pattern (used for black key detection)
+const blackMap = [1,3,6,8,10]; // semitone positions in octave
 
-    const div = document.createElement("div");
-    div.className = (i%12==1||i%12==3||i%12==6||i%12==8||i%12==10)
-        ? "black-key"
-        : "white-key";
+let whiteIndex = 0;
 
-    div.onmousedown=()=>playNote(n);
-    div.onmouseup=()=>stopNote(n);
+for(let midi = START; midi <= END; midi++){
 
-    keys.appendChild(div);
-});
+    const noteInOctave = midi % 12;
+    const isBlack = blackMap.includes(noteInOctave);
+
+    const key = document.createElement("div");
+
+    if(isBlack){
+
+        key.className = "black-key";
+
+        // position black keys between whites
+        key.style.left = (whiteIndex * 40 - 12) + "px";
+
+    } else {
+
+        key.className = "white-key";
+        whiteIndex++;
+    }
+
+    key.dataset.midi = midi;
+
+    // EVENTS (safe even if synth not loaded yet)
+    key.onmousedown = () => window.playNote?.(midi);
+    key.onmouseup = () => window.stopNote?.(midi);
+
+    keyboard.appendChild(key);
+}
