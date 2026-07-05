@@ -37,3 +37,17 @@ for(let midi = START; midi <= END; midi++){
 
     keyboard.appendChild(key);
 }
+function unlockAudio(){
+    if(window._audioUnlocked) return;
+    window._audioUnlocked = true;
+
+    const ctx = window.AUDIO || window.audio;
+    if(!ctx) return;
+
+    ctx.resume?.();
+}
+
+// unlock on ANY user interaction
+window.addEventListener("mousedown", unlockAudio);
+window.addEventListener("touchstart", unlockAudio);
+window.addEventListener("keydown", unlockAudio);
