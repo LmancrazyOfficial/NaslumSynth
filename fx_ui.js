@@ -1,24 +1,27 @@
-// Wait until DOM is ready
 window.addEventListener("DOMContentLoaded",()=>{
 
-    const reverb = document.getElementById("reverb");
-    const delay = document.getElementById("delay");
-    const feedback = document.getElementById("feedback");
-    const distortion = document.getElementById("distortion");
+const r = document.getElementById("reverb");
+const d = document.getElementById("delay");
+const f = document.getElementById("feedback");
+const dist = document.getElementById("distortion");
 
-    function update(){
+function update(){
 
-        window.FX_STATE.reverbWet = parseFloat(reverb.value);
-        window.FX_STATE.delayTime = parseFloat(delay.value);
-        window.FX_STATE.delayFeedback = parseFloat(feedback.value);
-        window.FX_STATE.distortion = parseFloat(distortion.value);
+    FX.delay.delayTime.value = parseFloat(d.value);
 
-        window.updateFX();
+    FX.delayGain.gain.value = parseFloat(f.value);
+
+    const amount = parseFloat(dist.value);
+
+    const curve = new Float32Array(44100);
+    for(let i=0;i<44100;i++){
+        let x = i*2/44100-1;
+        curve[i]=(Math.PI+amount)*x/(Math.PI+amount*Math.abs(x));
     }
+    FX.distortion.curve = curve;
 
-    [reverb,delay,feedback,distortion]
-    .forEach(el=>{
-        el.addEventListener("input",update);
-    });
+}
+
+[r,d,f,dist].forEach(x=>x.addEventListener("input",update));
 
 });
