@@ -1,69 +1,40 @@
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const audio = new AudioContextClass();
 
-// MASTER
+// expose globally
+window.AUDIO = audio;
+
 const master = audio.createGain();
-master.gain.value = 0.7;
+master.gain.value = 0.5;
 master.connect(audio.destination);
 
-// active notes
 const voices = new Map();
 
-// safe state getter
-function state(){
-    return window.STATE || {
-        attack:0.01,
-        decay:0.2,
-        sustain:0.7,
-        release:0.3,
-        wave:"sine"
-    };
-}
-
-// midi → frequency
 function freq(m){
     return 440 * Math.pow(2,(m-69)/12);
 }
 
-// 🎹 CREATE VOICE (SAFE VERSION)
-function makeVoice(f){
+// 🎵 PLAY (TEST MODE)
+window.playNote = function(midi){
 
-    const s = state();
+    if(audio.state === "suspended"){
+        audio.resume();
+    }
 
     const osc = audio.createOscillator();
-    osc.type = s.wave;
-    osc.frequency.value = f;
-
     const gain = audio.createGain();
-    gain.gain.value = 0;
+
+    osc.type = "sine";
+    osc.frequency.value = freq(midi);
+
+    gain.gain.setValueAtTime(0.5, audio.currentTime);
 
     osc.connect(gain);
     gain.connect(master);
 
-    return {osc,gain};
-}
+    osc.start();
 
-// 🎵 PLAY
-window.playNote = function(midi){
-
-    if(voices.has(midi)) return;
-
-    if(audio.state === "suspended")
-        audio.resume();
-
-    const v = makeVoice(freq(midi));
-    const s = state();
-    const now = audio.currentTime;
-
-    // ADSR
-    v.gain.gain.cancelScheduledValues(now);
-    v.gain.gain.setValueAtTime(0,now);
-    v.gain.gain.linearRampToValueAtTime(1,now+s.attack);
-    v.gain.gain.linearRampToValueAtTime(s.sustain,now+s.attack+s.decay);
-
-    v.osc.start(now);
-
-    voices.set(midi,v);
+    voices.set(midi,{osc,gain});
 };
 
 // 🛑 STOP
@@ -72,27 +43,15 @@ window.stopNote = function(midi){
     const v = voices.get(midi);
     if(!v) return;
 
-    const s = state();
-    const now = audio.currentTime;
+    const t = audio.currentTime;
 
-    v.gain.gain.cancelScheduledValues(now);
-    v.gain.gain.setValueAtTime(v.gain.gain.value,now);
-    v.gain.gain.linearRampToValueAtTime(0,now+s.release);
+    v.gain.gain.setValueAtTime(v.gain.gain.value,t);
+    v.gain.gain.linearRampToValueAtTime(0,t+0.1);
 
-    const stopTime = now + s.release + 0.05;
+    v.osc.stop(t+0.15);
 
-    v.osc.stop(stopTime);
-
-    setTimeout(()=>{
-        voices.delete(midi);
-    },(s.release+0.2)*1000);
+    setTimeout(()=>voices.delete(midi),200);
 };
 
-// volume safety
-document.getElementById("volume")?.addEventListener("input",(e)=>{
-    master.gain.value = e.target.value/100;
-});
-
-// expose master (for debugging)
-window.MASTER = master;
-window.AUDIO = audio;
+// DEBUG
+console.log("Audio engine loaded");
