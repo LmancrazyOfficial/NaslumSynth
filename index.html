@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaslumSynth</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>🎹 NaslumSynth</h1>
+
+    <div class="toolbar">
+
+        <label>
+            Instrument
+            <select id="waveform">
+                <option value="sine">Sine</option>
+                <option value="square">Square</option>
+                <option value="triangle">Triangle</option>
+                <option value="sawtooth">Saw</option>
+            </select>
+        </label>
+
+        <label>
+            Volume
+            <input id="volume" type="range"
+                   min="0"
+                   max="100"
+                   value="70">
+        </label>
+
+    </div>
+
+</header>
+
+<main>
+
+    <div id="keyboardContainer">
+
+        <div id="keyboard"></div>
+
+    </div>
+
+</main>
+
+<script src="presets.js"></script>
+<script src="synth.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
