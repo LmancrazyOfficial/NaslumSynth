@@ -148,3 +148,21 @@ main{
 ::-webkit-scrollbar-thumb:hover{
     background:#cc0000;
 }
+.toolbar{
+    background:#111;
+    padding:10px;
+    border:1px solid #900;
+    border-radius:10px;
+}
+
+.toolbar label{
+    font-size:12px;
+}
+
+input[type=range]{
+    accent-color:#ff2b2b;
+}
+
+select{
+    cursor:pointer;
+}
