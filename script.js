@@ -81,3 +81,47 @@ function releaseKey(key){
     }
 
 }
+function syncState(){
+
+    window.SYNTH_STATE = {
+        attack: parseFloat(document.getElementById("attack").value),
+        decay: parseFloat(document.getElementById("decay").value),
+        sustain: parseFloat(document.getElementById("sustain").value),
+        release: parseFloat(document.getElementById("release").value),
+        waveform: document.getElementById("waveform").value
+    };
+
+}
+
+// Attach listeners
+["attack","decay","sustain","release","waveform"]
+.forEach(id=>{
+    document.getElementById(id).addEventListener("input", syncState);
+});
+
+// Presets
+const presetSelect = document.getElementById("preset");
+
+// Load preset names
+Object.keys(window.PRESETS).forEach(name=>{
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    presetSelect.appendChild(opt);
+});
+
+presetSelect.addEventListener("change",(e)=>{
+
+    const preset = window.PRESETS[e.target.value];
+
+    if(!preset) return;
+
+    document.getElementById("attack").value = preset.attack;
+    document.getElementById("decay").value = preset.decay;
+    document.getElementById("sustain").value = preset.sustain;
+    document.getElementById("release").value = preset.release;
+    document.getElementById("waveform").value = preset.waveform;
+
+    syncState();
+
+});
