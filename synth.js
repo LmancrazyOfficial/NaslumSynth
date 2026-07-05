@@ -1,53 +1,108 @@
-const notes = [];
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+const audio = new AudioContextClass();
 
-function freq(n){
-    return 440*Math.pow(2,(n-69)/12);
-}
+const master = audio.createGain();
+master.gain.value = 0.7;
+master.connect(audio.destination);
+
+// active voices
+const voices = new Map();
 
 function state(){
-    return window.STATE;
+    return window.STATE || {
+        attack:0.01,
+        decay:0.2,
+        sustain:0.7,
+        release:0.3,
+        wave:"sine"
+    };
 }
 
-function osc(f){
-    const o = AUDIO.createOscillator();
-    o.type = state().wave;
-    o.frequency.value = f;
-    return o;
+// frequency
+function freq(midi){
+    return 440 * Math.pow(2,(midi-69)/12);
 }
 
-function play(note){
-
-    const o = osc(freq(note));
-    const g = AUDIO.createGain();
+// 🎧 HIGH QUALITY VOICE
+function createVoice(f){
 
     const s = state();
-    const t = AUDIO.currentTime;
 
-    g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(1,t+s.attack);
-    g.gain.linearRampToValueAtTime(s.sustain,t+s.attack+s.decay);
+    const out = audio.createGain();
 
-    o.connect(g);
-    g.connect(FX.input);
+    // --- detuned layers (thicker sound) ---
+    const osc1 = audio.createOscillator();
+    const osc2 = audio.createOscillator();
+    const osc3 = audio.createOscillator();
 
-    o.start();
-    notes[note] = {o,g};
+    osc1.type = s.wave;
+    osc2.type = s.wave;
+    osc3.type = s.wave;
+
+    osc1.frequency.value = f;
+    osc2.frequency.value = f * 1.003;
+    osc3.frequency.value = f * 0.997;
+
+    const gain = audio.createGain();
+
+    // mix oscillators
+    osc1.connect(gain);
+    osc2.connect(gain);
+    osc3.connect(gain);
+
+    gain.connect(out);
+    out.connect(master);
+
+    return {osc:[osc1,osc2,osc3],gain,out};
 }
 
-function stop(note){
+// 🎹 PLAY NOTE
+window.playNote = function(midi){
 
-    const n = notes[note];
-    if(!n) return;
+    if(voices.has(midi)) return;
 
-    const t = AUDIO.currentTime;
+    if(audio.state === "suspended")
+        audio.resume();
+
+    const v = createVoice(freq(midi));
+    const now = audio.currentTime;
     const s = state();
 
-    n.g.gain.setValueAtTime(n.g.gain.value,t);
-    n.g.gain.linearRampToValueAtTime(0,t+s.release);
+    // ADSR
+    v.gain.gain.setValueAtTime(0,now);
+    v.gain.gain.linearRampToValueAtTime(1,now+s.attack);
+    v.gain.gain.linearRampToValueAtTime(s.sustain,now+s.attack+s.decay);
 
-    n.o.stop(t+s.release+0.05);
-    delete notes[note];
-}
+    v.osc.forEach(o=>o.start(now));
 
-window.playNote = play;
-window.stopNote = stop;
+    voices.set(midi,v);
+};
+
+// 🛑 STOP NOTE (FIXED SAFE RELEASE)
+window.stopNote = function(midi){
+
+    const v = voices.get(midi);
+    if(!v) return;
+
+    const now = audio.currentTime;
+    const s = state();
+
+    // smooth release
+    v.gain.gain.cancelScheduledValues(now);
+    v.gain.gain.setValueAtTime(v.gain.gain.value,now);
+    v.gain.gain.linearRampToValueAtTime(0,now+s.release);
+
+    // 🔥 GUARANTEED CLEANUP (fixes stuck notes)
+    const stopTime = now + s.release + 0.1;
+
+    v.osc.forEach(o=>o.stop(stopTime));
+
+    setTimeout(()=>{
+        voices.delete(midi);
+    },(s.release+0.2)*1000);
+};
+
+// master volume safety
+document.getElementById("volume")?.addEventListener("input",(e)=>{
+    master.gain.value = e.target.value/100;
+});
